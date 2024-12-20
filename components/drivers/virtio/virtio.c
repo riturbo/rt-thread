@@ -33,12 +33,20 @@ void virtio_status_acknowledge_driver(struct virtio_device *dev)
 
     dev->mmio_config->status |= VIRTIO_STATUS_ACKNOWLEDGE | VIRTIO_STATUS_DRIVER;
 }
+void virtio_status_feature_ok(struct virtio_device *dev)
+{
+    _virtio_dev_check(dev);
+
+    dev->mmio_config->status |= VIRTIO_STATUS_FEATURES_OK;
+
+}
+
 
 void virtio_status_driver_ok(struct virtio_device *dev)
 {
     _virtio_dev_check(dev);
 
-    dev->mmio_config->status |= VIRTIO_STATUS_FEATURES_OK | VIRTIO_STATUS_DRIVER_OK;
+    dev->mmio_config->status |= VIRTIO_STATUS_DRIVER_OK;
 }
 
 void virtio_interrupt_ack(struct virtio_device *dev)

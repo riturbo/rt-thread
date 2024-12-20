@@ -22,7 +22,7 @@ static void virtio_blk_rw(struct virtio_blk_device *virtio_blk_dev, rt_off_t pos
     int flags)
 {
     rt_uint16_t idx[3];
-    rt_size_t size = count * virtio_blk_dev->config->blk_size;
+    rt_size_t size = count * 512;//virtio_blk_dev->config->blk_size;
     struct virtio_device *virtio_dev = &virtio_blk_dev->virtio_dev;
 
 #ifdef RT_USING_SMP
@@ -46,7 +46,7 @@ static void virtio_blk_rw(struct virtio_blk_device *virtio_blk_dev, rt_off_t pos
     virtio_blk_dev->info[idx[0]].valid = RT_TRUE;
     virtio_blk_dev->info[idx[0]].req.type = flags;
     virtio_blk_dev->info[idx[0]].req.ioprio = 0;
-    virtio_blk_dev->info[idx[0]].req.sector = pos * (virtio_blk_dev->config->blk_size / 512);
+    virtio_blk_dev->info[idx[0]].req.sector = pos * (512 / 512);
 
     flags = flags == VIRTIO_BLK_T_OUT ? 0 : VIRTQ_DESC_F_WRITE;
 
@@ -115,7 +115,7 @@ static rt_err_t virtio_blk_control(rt_device_t dev, int cmd, void *args)
             }
 
             geometry->bytes_per_sector = VIRTIO_BLK_BYTES_PER_SECTOR;
-            geometry->block_size = virtio_blk_dev->config->blk_size;
+            geometry->block_size = 512;
             geometry->sector_count = virtio_blk_dev->config->capacity;
         }
         break;
@@ -210,7 +210,7 @@ rt_err_t rt_virtio_blk_init(rt_ubase_t *mmio_base, rt_uint32_t irq)
             (1 << VIRTIO_F_RING_INDIRECT_DESC));
 
     /* Tell device that feature negotiation is complete and we're completely ready */
-    virtio_status_driver_ok(virtio_dev);
+    virtio_status_feature_ok(virtio_dev);
 
     if (virtio_queues_alloc(virtio_dev, 1) != RT_EOK)
     {
@@ -222,6 +222,7 @@ rt_err_t rt_virtio_blk_init(rt_ubase_t *mmio_base, rt_uint32_t irq)
     {
         goto _alloc_fail;
     }
+    virtio_status_driver_ok(virtio_dev);
 
     virtio_blk_dev->parent.type = RT_Device_Class_Block;
 #ifdef RT_USING_DEVICE_OPS

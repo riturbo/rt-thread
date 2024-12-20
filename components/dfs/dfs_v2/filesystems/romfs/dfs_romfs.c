@@ -13,7 +13,9 @@
 #include <dfs_dentry.h>
 #include <dfs_file.h>
 #include <dfs_mnt.h>
-
+#ifdef RT_USING_PAGECACHE
+#include "dfs_pcache.h"
+#endif
 #include "dfs_romfs.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -167,6 +169,15 @@ struct romfs_dirent *__dfs_romfs_lookup(struct romfs_dirent *root_dirent, const 
     return NULL;
 }
 
+#ifdef RT_USING_PAGECACHE
+static ssize_t dfs_romfs_page_read(struct dfs_file *file, struct dfs_page *page);
+
+static struct dfs_aspace_ops dfs_romfs_aspace_ops =
+{
+    .read = dfs_romfs_page_read
+};
+#endif
+
 static struct dfs_vnode *dfs_romfs_lookup (struct dfs_dentry *dentry)
 {
     rt_size_t size;
@@ -198,6 +209,11 @@ static struct dfs_vnode *dfs_romfs_lookup (struct dfs_dentry *dentry)
                 {
                     vnode->mode = romfs_modemap[ROMFS_DIRENT_FILE] | (S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
                     vnode->type = FT_REGULAR;
+
+                #ifdef RT_USING_PAGECACHE
+                    vnode->aspace = dfs_aspace_create(dentry, vnode, &dfs_romfs_aspace_ops);
+                #endif
+
                 }
 
                 DLOG(msg, "rom", "rom", DLOG_MSG, "vnode->data = dirent");
@@ -254,7 +270,20 @@ static ssize_t dfs_romfs_read(struct dfs_file *file, void *buf, size_t count, of
 
     return length;
 }
+#ifdef RT_USING_PAGECACHE
+static ssize_t dfs_romfs_page_read(struct dfs_file *file, struct dfs_page *page)
+{
+    int ret = -EINVAL;
 
+    if (page->page)
+    {
+        off_t fpos = page->fpos;
+        ret = dfs_romfs_read(file, page->page, page->size, &fpos);
+    }
+
+    return ret;
+}
+#endif
 static int dfs_romfs_close(struct dfs_file *file)
 {
     return RT_EOK;

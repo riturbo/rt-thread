@@ -19,6 +19,8 @@
 
 #ifdef RT_USING_SMP
 
+#endif /* RT_USING_SMP */
+
 /**
  * Spinlock
  */
@@ -27,8 +29,6 @@ typedef struct
 {
     rt_uint32_t value;
 } rt_hw_spinlock_t;
-
-#endif /* RT_USING_SMP */
 
 #define rt_hw_barrier(cmd, ...) \
     __asm__ volatile (RT_STRINGIFY(cmd) " "RT_STRINGIFY(__VA_ARGS__):::"memory")
