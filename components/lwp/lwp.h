@@ -278,6 +278,9 @@ void lwp_user_setting_restore(rt_thread_t thread);
 
 void lwp_uthread_ctx_save(void *ctx);
 void lwp_uthread_ctx_restore(void);
+/* per-thread variants used by exception/IRQ path to avoid rt_thread_self() races */
+void lwp_uthread_ctx_save_for(void *ctx, rt_thread_t thread);
+void lwp_uthread_ctx_restore_for(rt_thread_t thread);
 
 int lwp_setaffinity(int tid, int cpu);
 

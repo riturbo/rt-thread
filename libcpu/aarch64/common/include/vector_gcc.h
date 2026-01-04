@@ -107,8 +107,12 @@
     cbz     \tmpx, 1f
     b       2f
 1:
+    /* save current thread pointer into callee-saved x20 preserved across BLs */
+    bl rt_thread_self
+    mov     x20, x0
     mov     x0, \eframex
-    bl      lwp_uthread_ctx_save
+    mov     x1, x20
+    bl      lwp_uthread_ctx_save_for
 2:
 #endif /* RT_USING_SMART */
 .endm
@@ -120,7 +124,9 @@
     cbz     \tmpx, 1f
     b       2f
 1:
-    bl      lwp_uthread_ctx_restore
+    /* restore using the saved thread pointer in x20 */
+    mov     x0, x20
+    bl      lwp_uthread_ctx_restore_for
 2:
 #endif /* RT_USING_SMART */
 .endm

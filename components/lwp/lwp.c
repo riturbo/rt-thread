@@ -759,6 +759,27 @@ void lwp_uthread_ctx_restore(void)
     thread->user_ctx.ctx = RT_NULL;
 }
 
+/*
+ * Per-thread variants: operate on the specified thread instead of
+ * calling `rt_thread_self()` so restore can't be affected by a
+ * context switch happening inside the IRQ handler.
+ */
+void lwp_uthread_ctx_save_for( void *ctx,rt_thread_t thread)
+{
+    if (thread)
+    {
+        thread->user_ctx.ctx = ctx;
+    }
+}
+
+void lwp_uthread_ctx_restore_for(rt_thread_t thread)
+{
+    if (thread)
+    {
+        thread->user_ctx.ctx = RT_NULL;
+    }
+}
+
 /**
  * @brief Prints a backtrace of the current thread's call stack
  *
