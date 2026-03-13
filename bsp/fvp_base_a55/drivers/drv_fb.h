@@ -14,9 +14,9 @@
 #include <rtdevice.h>
 
 
-#define BSP_LCD_WIDTH   320
+#define BSP_LCD_WIDTH   512
 
-#define BSP_LCD_HEIGHT  160
+#define BSP_LCD_HEIGHT  512
 
 int drv_clcd_hw_init(void);
 

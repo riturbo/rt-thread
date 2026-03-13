@@ -1,0 +1,3 @@
+[submodule "bsp/fvp_base_a55/rgx"]
+	path = bsp/fvp_base_a55/rgx
+	url = https://github.com/riturbo/rtthread_rgx.git

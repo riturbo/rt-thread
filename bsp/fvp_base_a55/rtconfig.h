@@ -141,6 +141,7 @@
 /* end of AArch64 Architecture Configuration */
 #define ARCH_CPU_64BIT
 #define RT_USING_CACHE
+#define RT_USING_HW_ATOMIC
 #define RT_USING_CPU_FFS
 #define ARCH_MM_MMU
 #define ARCH_ARM
@@ -233,6 +234,10 @@
 #define PM_TICKLESS_THRESHOLD_TIME 2
 #define RT_USING_RTC
 #define RT_USING_SOFT_RTC
+#define RT_USING_INPUT
+#define RT_INPUT_UAPI
+#define RT_INPUT_UAPI_EVENT_MAX 128
+#define RT_UAPI_FAKE_BLOCK
 
 /* Power Management (PM) Domains device drivers */
 
