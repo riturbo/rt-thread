@@ -172,26 +172,60 @@ static rt_size_t read_lba(struct rt_blk_disk *disk,
         rt_uint64_t lba, rt_uint8_t *buffer, rt_size_t count)
 {
     rt_size_t totalreadcount = 0;
+    rt_ssize_t ssz;
 
     if (!buffer || lba > last_lba(disk))
     {
         return 0;
     }
 
+    ssz = rt_blk_disk_get_logical_block_size(disk);
+
+    if (ssz <= 0)
+    {
+        LOG_E("%s: Failed to get logical block size", to_disk_name(disk));
+        return 0;
+    }
+
     for (rt_uint64_t n = lba; count; ++n)
     {
-        int copied = 512;
+        rt_size_t copied = (rt_size_t)ssz;
 
-        disk->ops->read(disk, n, buffer, 1);
-
-        if (copied > count)
+        if (copied <= count)
         {
-            copied = count;
-        }
+            if (disk->ops->read(disk, n, buffer, 1) != 1)
+            {
+                break;
+            }
 
-        buffer += copied;
-        totalreadcount += copied;
-        count -= copied;
+            buffer += copied;
+            totalreadcount += copied;
+            count -= copied;
+        }
+        else
+        {
+            /*
+             * Partial sector: use a temporary buffer to avoid writing
+             * beyond the end of the caller's buffer.
+             */
+            rt_uint8_t *tmp = rt_malloc(ssz);
+
+            if (!tmp)
+            {
+                break;
+            }
+
+            if (disk->ops->read(disk, n, tmp, 1) != 1)
+            {
+                rt_free(tmp);
+                break;
+            }
+
+            rt_memcpy(buffer, tmp, count);
+            rt_free(tmp);
+            totalreadcount += count;
+            count = 0;
+        }
     }
 
     return totalreadcount;
